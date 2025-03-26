@@ -7,6 +7,7 @@ export interface AssignmentDetails {
   title: string;
   description: string;
   dueDate: string;
+  classCode: string;
   teacherName: string;
   subject: string;
   fileURL?: string;
@@ -61,6 +62,9 @@ export const saveAssignmentToFirestore = async (assignmentDetails: AssignmentDet
     console.log('Saving Assignment:', assignmentData);
 
     const docRef = await addDoc(collection(db, 'assignments'), assignmentData);
+
+    // storing class code in a separate collection
+    await addDoc(collection(db, 'classes'), { classCode: assignmentData.classCode });
     
     console.log('Assignment saved with ID:', docRef.id);
     return docRef.id;

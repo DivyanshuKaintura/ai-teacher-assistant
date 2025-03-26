@@ -5,6 +5,7 @@ import Image from 'next/image';
 import bg_image from '../../../public/bg1.jpg'
 // import TeacherAssignmentUpload from '../teacher/upload-assignment-form/page';
 import TeacherUploadLandingButton from '../teacher/open-form/page'
+import StudentStatusCheck from '../student/verify/page';
 import {
   BookOpen,
   Clock,
@@ -169,6 +170,7 @@ const LandingPage = () => {
         </section>
 
         <TeacherUploadLandingButton />
+        <StudentStatusCheck />
 
         {/* <AssignmentUploadPortal /> */}
 

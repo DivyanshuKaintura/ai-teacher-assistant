@@ -13,6 +13,7 @@ const TeacherAssignmentUpload = () => {
     title: '',
     description: '',
     dueDate: '',
+    classCode: '',
     teacherName: '',
     subject: ''
   });
@@ -63,6 +64,7 @@ const TeacherAssignmentUpload = () => {
         title: '',
         description: '',
         dueDate: '',
+        classCode: '',
         teacherName: '',
         subject: ''
       });
@@ -141,6 +143,36 @@ const TeacherAssignmentUpload = () => {
               value={assignmentDetails.subject}
               onChange={handleInputChange}
               placeholder="Enter subject name"
+              className="
+                w-full 
+                p-3 
+                border 
+                border-gray-300 
+                rounded-lg 
+                focus:border-sky-700 
+                focus:ring-2 
+                focus:ring-sky-50
+                text-gray-800
+              "
+              required
+            />
+          </div>
+
+          {/* class code */}
+          <div>
+            <label
+              htmlFor="classCode"
+              className="block text-gray-600 mb-2"
+            >
+              Class Code
+            </label>
+            <input
+              type="text"
+              id="classCode"
+              name="classCode"
+              value={assignmentDetails.classCode}
+              onChange={handleInputChange}
+              placeholder="Enter Class Code"
               className="
                 w-full 
                 p-3 
