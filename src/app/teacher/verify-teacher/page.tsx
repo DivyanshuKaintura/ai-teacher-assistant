@@ -77,6 +77,7 @@ const TeacherLogin: React.FC = () => {
                         onClick={() => {
                             // Typically, you would use React Router to navigate
                             console.log('Navigate to teacher dashboard');
+                            window.location.href = '/teacher/upload-assignment-form';
                         }}
                     >
                         Go to Dashboard
