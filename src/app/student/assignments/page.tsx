@@ -13,101 +13,87 @@ interface classDetails {
     classCode: string;
     teacherName: string;
     subject: string;
+    subjectCode: string;
+    semester: string;
+    course: string;
     fileURL?: string;
     uploadedAt: string;
     createdAt: string;
 }
 
 const ClassAssignmentsPage = () => {
-    const [classCode, setClassCode] = useState('');
+    const [course, setCourse] = useState<string | null>(null);
+    const [semester, setSemester] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [assignments, setAssignments] = useState<classDetails[]>([]);
-
-    // Function to fetch existing assignments for the class
-    const fetchExistingAssignments = async (classCode: string) => {
-        console.log('Fetching existing requests for assignments:', classCode);
-        try {
-            setIsLoading(true);
-            const requestsQuery = query(
-                collection(db, 'assignments'),
-                where('classCode', '==', classCode)
-            );
-            console.log('Requests query:', requestsQuery);
-
-            const requestsSnapshot = await getDocs(requestsQuery);
-            console.log('Requests snapshot:', requestsSnapshot);
-            const requests: classDetails[] = [];
-            requestsSnapshot.forEach(doc => {
-                const data = doc.data();
-                requests.push({
-                    id: doc.id,
-                    title: data.title,
-                    description: data.description,
-                    dueDate: data.dueDate,
-                    classCode: data.classCode,
-                    teacherName: data.teacherName,
-                    subject: data.subject,
-                    fileURL: data.fileURL,
-                    uploadedAt: data.uploadedAt,
-                    createdAt: data.createdAt
-                });
-            });
-
-            setAssignments(requests);
-        } catch (error) {
-            setError('An error occurred while fetching assignments. Please try again.');
-            console.error('Error fetching assignments requests:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const [uploadedAssignment, setUploadedAssignment] = useState<File | null>(null);
 
     useEffect(() => {
-        const checkClassCode = async () => {
+        const getDetails = async () => {
             try {
                 setIsLoading(true);
 
                 // Get houseId from URL parameters
                 const params = new URLSearchParams(window.location.search);
-                const classCode = params.get('classCode');
+                const course = params.get('course');
+                setCourse(course);
+                const semester = params.get('semester');
+                setSemester(semester);
 
-                if (!classCode) {
+                if (!course || !semester) {
                     setIsLoading(false);
                     return;
                 }
 
-                console.log('Class Code:', classCode);
+                console.log('Course:', course);
+                console.log('Semester:', semester);
 
                 // Query Firestore to check if houseId exists
-                const classQuery = query(
-                    collection(db, 'classes'),
-                    where('classCode', '==', classCode),
+                const assignmentQuery = query(
+                    collection(db, 'assignments'),
+                    where('course', '==', course),
+                    where('semester', '==', semester),
                 );
 
-                const classSnapshot = await getDocs(classQuery);
+                console.log('Fetching existing requests for assignments:');
+                const assignmentSnapshot = await getDocs(assignmentQuery);
 
-                if (classSnapshot.empty) {
-                    alert('This class does not exist.');
-                    window.location.href = '/student/class-code';
-                    return;
-                }
+                console.log('Assignments Returned: ', assignmentSnapshot.docs.length);
+                const requests: classDetails[] = [];
+                assignmentSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    requests.push({
+                        id: doc.id,
+                        title: data.title,
+                        description: data.description,
+                        dueDate: data.dueDate,
+                        classCode: data.classCode,
+                        teacherName: data.teacherName,
+                        subject: data.subject,
+                        subjectCode: data.subjectCode,
+                        semester: data.semester,
+                        course: data.course,
+                        fileURL: data.fileURL,
+                        uploadedAt: data.uploadedAt,
+                        createdAt: data.createdAt
+                    });
+                });
 
-                setClassCode(classCode);
-
-                // Fetch existing assignments for the class
-                await fetchExistingAssignments(classCode);
+                setAssignments(requests);
 
                 setIsLoading(false);
             } catch (error) {
+                setError('');
                 console.error('Error checking class code:', error);
                 setIsLoading(false);
                 alert('An error occurred while checking the class code. Please try again.');
             }
         };
 
-        checkClassCode();
+        getDetails();
     }, []);
+
     const handleViewAssignment = (fileURL: string | URL | undefined) => {
         if (fileURL) {
             window.open(fileURL, '_blank');
@@ -124,10 +110,26 @@ const ClassAssignmentsPage = () => {
         });
     };
 
-    const handleSubmitAssignment = (assignmentId: string) => {
-        // Navigate to assignment submission page
-        // router.push(`/student/class/${classCode}/assignment/${assignmentId}/submit`);
-    };
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (files) {
+          const file = files[0];
+          setUploadedAssignment(file);
+        }
+
+        try {
+            if(!uploadedAssignment) {
+                alert('Please upload assignment in PDF format.');
+                return;
+            }
+
+            // const extractedText = await extractTextFromPDF(uploadedAssignment);
+
+
+        } catch (error) {
+            console.error('Error uploading file:', error);
+        }
+      };
 
     if (isLoading) {
         return (
@@ -160,10 +162,10 @@ const ClassAssignmentsPage = () => {
         <div className="min-h-screen bg-sky-50 p-4">
             <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
                 <h1 className="text-sky-700 text-3xl font-bold mb-6 text-center">
-                    Class Assignments
+                    Assignments
                 </h1>
                 <p className="text-gray-600 text-center mb-6">
-                    Class Code: {classCode.toUpperCase()}
+                    Course: {course}, Semester: {semester}
                 </p>
 
                 {assignments.length === 0 ? (
@@ -183,7 +185,7 @@ const ClassAssignmentsPage = () => {
                                             {assignment.title}
                                         </h3>
                                         <p className="text-gray-600 text-sm">
-                                            {assignment.subject} | by {assignment.teacherName}
+                                            {assignment.subject} ({assignment.subjectCode}) | by {assignment.teacherName}
                                         </p>
                                     </div>
                                     <span className="text-gray-500 text-xs">
@@ -210,13 +212,36 @@ const ClassAssignmentsPage = () => {
                                                 <span>View Assignment</span>
                                             </button>
                                         )}
-                                        <button
-                                            onClick={() => handleSubmitAssignment(assignment.id)}
-                                            className="bg-amber-500 text-white px-3 py-1 rounded-lg hover:bg-amber-600 transition-colors flex items-center space-x-1"
-                                        >
-                                            <Upload size={16} />
-                                            <span>Submit</span>
-                                        </button>
+                                        {/* File Upload */}
+                                        <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg ">
+                                            <input
+                                            type="file"
+                                            id="file-upload"
+                                            className="hidden"
+                                            onChange={handleFileUpload}
+                                            accept=".pdf"
+                                            required
+                                            />
+                                            <label
+                                            htmlFor="file-upload"
+                                            className="
+                                            flex 
+                                            flex-col 
+                                            items-center 
+                                            cursor-pointer 
+                                            hover:bg-sky-50 
+                                            p-4 
+                                            rounded-lg 
+                                            transition-colors
+                                            text-green-800
+                                            bg-green-200
+                                            "
+                                                >
+                                            Upload Assignment
+                                            </label>
+
+                                            
+                                        </div>
                                     </div>
                                 </div>
                             </div>

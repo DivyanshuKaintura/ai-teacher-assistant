@@ -10,7 +10,10 @@ export interface AssignmentDetails {
   classCode: string;
   teacherName: string;
   subject: string;
+  subjectCode: string;
   fileURL?: string;
+  semester: string;
+  course: string;
 }
 
 export const uploadPdfToStorage = async (file: File): Promise<string> => {
@@ -64,7 +67,7 @@ export const saveAssignmentToFirestore = async (assignmentDetails: AssignmentDet
     const docRef = await addDoc(collection(db, 'assignments'), assignmentData);
 
     // storing class code in a separate collection
-    await addDoc(collection(db, 'classes'), { classCode: assignmentData.classCode });
+    // await addDoc(collection(db, 'course-semester'), { course: assignmentDetails.course, semester: assignmentDetails.semester});
     
     console.log('Assignment saved with ID:', docRef.id);
     return docRef.id;
